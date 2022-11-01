@@ -1,11 +1,11 @@
 const Movie = require('../models/movieSchema');
 const NotFoundError = require('../Errors/NotFoundError');
 const ForbiddenError = require('../Errors/ForbiddenError');
-const Error400 = require('../Errors/Error400');
+const { errorMessage } = require('../utils/errorMessages');
 
 module.exports.getMovies = (req, res, next) => {
   const owner = req.user._id;
-  Movie.find({owner})
+  Movie.find({ owner })
     .then((movies) => res.send(movies))
     .catch(next);
 };
@@ -25,7 +25,8 @@ module.exports.createMovie = (req, res, next) => {
     movieId,
   } = req.body;
   const owner = req.user._id;
-  Movie.create({ country,
+  Movie.create({
+    country,
     director,
     duration,
     year,
@@ -39,14 +40,7 @@ module.exports.createMovie = (req, res, next) => {
     owner,
   })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError'
-        || err.name === 'ValidationError') {
-        next(new Error400('Произошла ошибка валидации данных'));
-      } else {
-        next(err);
-      }
-    });
+    .catch((err) => errorMessage(err, req, res, next));
 };
 
 module.exports.deleteMovie = (req, res, next) => {

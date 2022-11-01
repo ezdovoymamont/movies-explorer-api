@@ -1,54 +1,33 @@
-require('dotenv').config();
 const { connect } = require('mongoose');
 const express = require('express');
 const { json } = require('express');
 const { errors } = require('celebrate');
+const cors = require('cors');
+const helmet = require('helmet');
 const users = require('./routes/users');
 const movies = require('./routes/movies');
 const auth = require('./routes/auth');
 const middleJwt = require('./middlewares/auth');
 const NotFoundError = require('./Errors/NotFoundError');
+const { limiter } = require('./utils/limiter');
 
-const { PORT = 3000 } = process.env;
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { handleErrors } = require('./middlewares/handleErrors');
+const { DATABASE_URL, PORT } = require('./config/config');
 
-connect('mongodb://localhost:27017/bitfilmsdb', {
+connect(DATABASE_URL, {
   useNewUrlParser: true,
 //  useCreateIndex: true,
 //   useFindAndModify: false
 });
 
-//todo add lib cors
-const allowedCors = [
-  'http://garry.students.nomoredomains.icu',
-  'https://garry.students.nomoredomains.icu',
-  'http://localhost:3000',
-];
-
 const app = express();
+app.use(helmet());
+app.use(limiter);
 app.use(json());
 app.use(requestLogger);
 
-app.use((req, res, next) => {
-  const { method } = req; // Сохраняем тип запроса (HTTP-метод) в соответствующую переменную
-  const requestHeaders = req.headers['access-control-request-headers'];
-  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
-
-  if (method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Headers', requestHeaders);
-    res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
-    res.header('Access-Control-Allow-Origin', '*');
-    return res.end();
-  }
-
-  const { origin } = req.headers; // Сохраняем источник запроса в переменную origin
-
-  if (allowedCors.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  return next();
-});
+app.use(cors());
 
 app.use('/users', middleJwt, users);
 app.use('/movies', middleJwt, movies);
@@ -60,7 +39,7 @@ app.use((req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
 });
 app.use(handleErrors);
+
 app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
   console.log(`App listening on port ${PORT}`);
 });

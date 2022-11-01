@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userSchema');
 const NotFoundError = require('../Errors/NotFoundError');
 const UnauthorizedError = require('../Errors/UnauthorizedError');
-const UserAlreadyExistsError = require('../Errors/UserAlreadyExistsError');
-const Error400 = require('../Errors/Error400');
+const { errorMessage } = require('../utils/errorMessages');
+const { JWT_STORAGE_TIME, JWT_SECRET } = require('../config/config');
 
 module.exports.getUser = (req, res, next) => {
   let { id } = req.params;
@@ -34,17 +34,7 @@ module.exports.createUser = (req, res, next) => {
       delete userP.password;
       res.send({ data: userP });
     })
-    .catch((err) => {
-      if (err.name === 'CastError'
-        || err.name === 'ValidationError') {
-        next(new Error400('Произошла ошибка валидации данных' ));
-      }
-      if (err.code === 11000) {
-        next(new UserAlreadyExistsError('Пользователь уже создан'));
-      } else {
-        next(err);
-      }
-    });
+    .catch((err) => errorMessage(err, req, res, next));
 };
 
 module.exports.updateUser = (req, res, next) => {
@@ -56,16 +46,7 @@ module.exports.updateUser = (req, res, next) => {
       }
       res.send({ data: user });
     })
-    .catch((err) => {
-      if (err.name === 'CastError'
-        || err.name === 'ValidationError') {
-        next(new Error400('Произошла ошибка валидации данных' ));
-      } else if (err.code === 11000) {
-        next(new UserAlreadyExistsError('E-mail уже занят'));
-      } else {
-        next(err);
-      }
-    });
+    .catch((err) => errorMessage(err, req, res, next));
 };
 
 module.exports.login = (req, res, next) => {
@@ -80,12 +61,10 @@ module.exports.login = (req, res, next) => {
         throw new UnauthorizedError('Неверный логин/пароль');
       }
 
-      const { NODE_ENV, JWT_SECRET } = process.env;
-
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-        { expiresIn: '1w' },
+        JWT_SECRET,
+        { expiresIn: JWT_STORAGE_TIME },
       );
 
       res.status(200).send({ jwt: token });

@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../Errors/UnauthorizedError');
+const { JWT_SECRET } = require('../config/config');
 
 const middleJwt = (req, res, next) => {
-  const { NODE_ENV, JWT_SECRET } = process.env;
   if (req.headers.authorization === undefined) {
     throw new UnauthorizedError('Ошибка сессии');
   }
   const token = req.headers.authorization.split(' ')[1];
   jwt.verify(
     token,
-    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+    JWT_SECRET,
     {},
     (err, payload) => {
       if (err) {

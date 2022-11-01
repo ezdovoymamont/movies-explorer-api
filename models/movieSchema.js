@@ -1,6 +1,7 @@
 /* const { ObjectId } = require('mongodb'); */
 const mongoose = require('mongoose');
 const validator = require('validator');
+
 const movieSchema = new mongoose.Schema({
   country: {
     type: String,
@@ -27,7 +28,7 @@ const movieSchema = new mongoose.Schema({
     validate: [(value) => validator.isURL(value, {
       protocols: ['http', 'https', 'ftp'],
       require_tld: true,
-      require_protocol: true
+      require_protocol: true,
     })],
     required: true,
   },
@@ -36,7 +37,7 @@ const movieSchema = new mongoose.Schema({
     validate: [(value) => validator.isURL(value, {
       protocols: ['http', 'https', 'ftp'],
       require_tld: true,
-      require_protocol: true
+      require_protocol: true,
     })],
     required: true,
   },
@@ -45,7 +46,7 @@ const movieSchema = new mongoose.Schema({
     validate: [(value) => validator.isURL(value, {
       protocols: ['http', 'https', 'ftp'],
       require_tld: true,
-      require_protocol: true
+      require_protocol: true,
     })],
     required: true,
   },
