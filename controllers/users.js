@@ -2,16 +2,11 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userSchema');
 const NotFoundError = require('../Errors/NotFoundError');
-const UnauthorizedError = require('../Errors/UnauthorizedError');
 const { errorMessage } = require('../utils/errorMessages');
 const { JWT_STORAGE_TIME, JWT_SECRET } = require('../config/config');
 
 module.exports.getUser = (req, res, next) => {
-  let { id } = req.params;
-  if (id === undefined) {
-    id = req.user._id;
-  }
-  User.findById(id)
+  User.findById(req.user._id)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError('Пользователь не найдена');
@@ -54,11 +49,11 @@ module.exports.login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (user == null) {
-        throw new UnauthorizedError('Пользователь не найден');
+        throw new NotFoundError('Неправильная почта или пароль');
       }
 
       if (bcryptjs.compareSync(password, user.password) === false) {
-        throw new UnauthorizedError('Неверный логин/пароль');
+        throw new NotFoundError('Неверный логин/пароль');
       }
 
       const token = jwt.sign(
