@@ -12,6 +12,6 @@ router.use('/movies', middleJwt, movies);
 router.use('', auth);
 router.use('', middleJwt, (req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
-})
+});
 
 module.exports = router;

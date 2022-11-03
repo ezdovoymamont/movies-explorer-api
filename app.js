@@ -5,10 +5,7 @@ const { errors } = require('celebrate');
 const cors = require('cors');
 const helmet = require('helmet');
 
-const auth = require('./routes/auth');
 const allRoutes = require('./routes/index');
-const middleJwt = require('./middlewares/auth');
-const NotFoundError = require('./Errors/NotFoundError');
 const { limiter } = require('./utils/limiter');
 
 const { requestLogger, errorLogger } = require('./middlewares/logger');
